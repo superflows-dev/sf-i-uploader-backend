@@ -16,6 +16,9 @@ const AUTH_REGION = "AWS_AUTH_REGION";
 const AUTH_API = "AWS_AUTH_API";
 const AUTH_STAGE = "test";
 
+const RECORD_TYPE_META = "meta";
+const RECORD_TYPE_DATA= "data";
+
 const PRESERVE_LOGS_DAYS = 3;
 
 export { 
@@ -33,12 +36,13 @@ export {
     AUTH_API, 
     AUTH_STAGE,
     PRESERVE_LOGS_DAYS,
-    UploadDocumentsCommand,
     CloudWatchLogsClient,
     PutLogEventsCommand,
     LOG_GROUP_NAME,
     GetLogEventsCommand,
     S3_BUCKET,
     PutObjectCommand,
-    s3Client
+    s3Client,
+    RECORD_TYPE_META,
+    RECORD_TYPE_DATA
 };

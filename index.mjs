@@ -1,4 +1,4 @@
-import { PutObjectCommand, s3Client } from './globals.mjs';
+import { processUpload } from './upload.mjs';
 
 export const handler = async (event, context, callback) => {
     
@@ -14,22 +14,23 @@ export const handler = async (event, context, callback) => {
       },
     };
     
-    const command = new PutObjectCommand({
-      Bucket: "flagggrc-complianceuploads1684312618859-uploads",
-      Key: "hello-s5.txt",
-      Body: "Hello S3!",
-    });
-  
-    try {
-      const response = await s3Client.send(command);
-      console.log(response);
-    } catch (err) {
-      console.error(err);
+    if(event["httpMethod"] == "OPTIONS") {
+      callback(null, response);
+      return;
     }
     
+    switch(event["path"]) {
+      
+        case "/upload":
+          const resultUpload = await processUpload(event);
+          response.body = JSON.stringify(resultUpload.body);
+          response.statusCode = resultUpload.statusCode;
+        break;
+        
+    }
     
-    response.body = "hello";
     callback(null, response);
     
     return response;
+    
 };
