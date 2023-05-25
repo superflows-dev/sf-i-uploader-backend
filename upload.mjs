@@ -91,6 +91,7 @@ export const processUpload = async (event) => {
           Bucket: S3_BUCKET,
           Key: key + "/manifest.json",
           Body: JSON.stringify({ext: ext, numblocks: numblocks}),
+          ContentType: 'application/json'
         });
         
         try {
@@ -104,13 +105,13 @@ export const processUpload = async (event) => {
     
     if(type == RECORD_TYPE_DATA) {
         
-        if(data == null || data == "" || data.length < 6) {
+        if(data == null || data == "" || data.length <= 0) {
             const response = {statusCode: 400, body: {result: false, error: "Data is not valid!"}}
            // processAddLog(userId, 'detail', event, response, response.statusCode)
             return response;
         }
         
-        if(block == null || parseInt(block + "") <= 0) {
+        if(block == null || parseInt(block + "") < 0) {
             const response = {statusCode: 400, body: {result: false, error: "Block is not valid!"}}
            // processAddLog(userId, 'detail', event, response, response.statusCode)
             return response;
@@ -119,7 +120,7 @@ export const processUpload = async (event) => {
         const command = new PutObjectCommand({
           Bucket: S3_BUCKET,
           Key: key + "/" + block + ".dat",
-          Body: JSON.stringify({ext: ext, numblocks: numblocks}),
+          Body: data,
         });
         
         try {

@@ -2,7 +2,7 @@ const REGION = "AWS_REGION"; //e.g. "us-east-1"
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { ScanCommand, GetItemCommand, PutItemCommand, UpdateItemCommand, DeleteItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb";
 import { CloudWatchLogsClient, PutLogEventsCommand, GetLogEventsCommand } from "@aws-sdk/client-cloudwatch-logs";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { PutObjectCommand, S3Client, GetObjectAttributesCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 
 const ddbClient = new DynamoDBClient({ region: REGION });
 const s3Client = new S3Client({});
@@ -44,5 +44,8 @@ export {
     PutObjectCommand,
     s3Client,
     RECORD_TYPE_META,
-    RECORD_TYPE_DATA
+    RECORD_TYPE_DATA,
+    GetObjectAttributesCommand,
+    GetObjectCommand,
+    ListObjectsV2Command
 };
