@@ -1,4 +1,4 @@
-import { ListObjectsV2Command, GetObjectCommand, GetObjectAttributesCommand, S3_BUCKET, PutObjectCommand, s3Client, RECORD_TYPE_META, RECORD_TYPE_DATA, REGION, TABLE, AUTH_ENABLE, AUTH_REGION, AUTH_API, AUTH_STAGE, ddbClient, ScanCommand, PutItemCommand } from "./globals.mjs";
+import { ListObjectsV2Command, GetObjectCommand, GetObjectAttributesCommand, S3_BUCKET, PutObjectCommand, s3Client, RECORD_TYPE_META, RECORD_TYPE_DATA, REGION, TABLE, AUTH_ENABLE, ddbClient, ScanCommand, PutItemCommand } from "./globals.mjs";
 import { processAuthenticate } from './authenticate.mjs';
 import { newUuidV4 } from './newuuid.mjs';
 import { getMimeFromExtension } from './getMimeFromExtension.mjs';
@@ -134,6 +134,15 @@ export const processGet = async (event) => {
         isTruncated = response.isTruncated;
         
     } while (isTruncated)
+    
+    for(var i = 0; i < allKeys.length; i++) {
+        
+        if(allKeys[i].Key.indexOf(key + "_" + "full." + ext) >= 0) {
+            allKeys.splice(i, 1);
+            break;
+        }
+        
+    }
     
     const numdatafiles = allKeys.length - 1;
     const percentageComplete = parseInt((100*numdatafiles)/numblocks)

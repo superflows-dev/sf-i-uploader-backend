@@ -1,6 +1,8 @@
 import { processUpload } from './upload.mjs';
 import { processGetMeta } from './getmeta.mjs';
 import { processGet } from './get.mjs';
+import { processGetExtract } from './getextract.mjs';
+import { processGetExtractStatus } from './getextractstatus.mjs';
 
 export const handler = async (event, context, callback) => {
     
@@ -39,9 +41,18 @@ export const handler = async (event, context, callback) => {
           const resultGet = await processGet(event);
           response.body = JSON.stringify(resultGet.body);
           response.statusCode = resultGet.statusCode;
-          if(response.statusCode == "200") {
-            
-          }
+        break;
+        
+        case "/getextract":
+          const resultGetExtract = await processGetExtract(event);
+          response.body = JSON.stringify(resultGetExtract.body);
+          response.statusCode = resultGetExtract.statusCode;
+        break;
+        
+        case "/getextractstatus":
+          const resultGetExtractStatus = await processGetExtractStatus(event);
+          response.body = JSON.stringify(resultGetExtractStatus.body);
+          response.statusCode = resultGetExtractStatus.statusCode;
         break;
         
     }
