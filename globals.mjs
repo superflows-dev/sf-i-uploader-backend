@@ -2,7 +2,7 @@ const REGION = "AWS_REGION"; //e.g. "us-east-1"
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { ScanCommand, GetItemCommand, PutItemCommand, UpdateItemCommand, DeleteItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb";
 import { CloudWatchLogsClient, PutLogEventsCommand, GetLogEventsCommand } from "@aws-sdk/client-cloudwatch-logs";
-import { PutObjectCommand, S3Client, GetObjectAttributesCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { PutObjectCommand, S3Client, GetObjectAttributesCommand, GetObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
 import { TextractClient, DetectDocumentTextCommand, StartDocumentTextDetectionCommand, GetDocumentTextDetectionCommand } from "@aws-sdk/client-textract";
 
 const ddbClient = new DynamoDBClient({ region: REGION });
