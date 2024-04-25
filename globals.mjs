@@ -11,6 +11,7 @@ const s3Client = new S3Client({});
 const TABLE = "DB_TABLE_NAME";
 const LOG_GROUP_NAME = "AWS_LOG_GROUP_NAME";
 const S3_BUCKET = "AWS_S3_BUCKET_NAME";
+const SNS_TOPIC_ARN = "AWS_SNS_TOPIC_ARN";
 
 const AUTH_ENABLE = true;
 
@@ -59,5 +60,6 @@ export {
     StartDocumentTextDetectionCommand,
     GetDocumentTextDetectionCommand,
     DOC_DIR,
-    VERIFY_DIR
+    VERIFY_DIR,
+    SNS_TOPIC_ARN
 };

@@ -1,4 +1,4 @@
-import { TextractClient, GetDocumentTextDetectionCommand, DetectDocumentTextCommand, StartDocumentTextDetectionCommand, ListObjectsV2Command, GetObjectCommand, GetObjectAttributesCommand, S3_BUCKET, PutObjectCommand, s3Client, RECORD_TYPE_META, RECORD_TYPE_DATA, REGION, TABLE, AUTH_ENABLE, ddbClient, ScanCommand, PutItemCommand } from "./globals.mjs";
+import { TextractClient, GetDocumentTextDetectionCommand, DetectDocumentTextCommand, StartDocumentTextDetectionCommand, ListObjectsV2Command, GetObjectCommand, GetObjectAttributesCommand, S3_BUCKET, PutObjectCommand, s3Client, RECORD_TYPE_META, RECORD_TYPE_DATA, REGION, TABLE, AUTH_ENABLE, ddbClient, ScanCommand, PutItemCommand, SNS_TOPIC_ARN } from "./globals.mjs";
 import { processAuthenticate } from './authenticate.mjs';
 import { newUuidV4 } from './newuuid.mjs';
 import { getMimeFromExtension } from './getMimeFromExtension.mjs';
@@ -145,8 +145,8 @@ export const processGetExtract = async (event) => {
         },
       },
       "NotificationChannel": {
-          "SNSTopicArn": "arn:aws:sns:us-east-1:181895849565:AmazonTextractT_sf-i-uploader_FlaggGRC-ComplianceUploads_1684321396854_test",
-          "RoleArn": "arn:aws:iam::181895849565:role/TextractRole"
+        "SNSTopicArn": SNS_TOPIC_ARN,
+        "RoleArn": "arn:aws:iam::181895849565:role/TextractRole"
       }
     };
     
