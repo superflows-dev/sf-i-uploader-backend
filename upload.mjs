@@ -2,7 +2,7 @@ import { S3_BUCKET, PutObjectCommand, s3Client, RECORD_TYPE_META, RECORD_TYPE_DA
 import { processAuthenticate } from './authenticate.mjs';
 import { newUuidV4 } from './newuuid.mjs';
 import { processAddLog } from './addlog.mjs';
-
+ 
 export const processUpload = async (event) => {
     
     // if((event["headers"]["Authorization"]) == null) {

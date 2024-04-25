@@ -1,6 +1,7 @@
 import { processUpload } from './upload.mjs';
 import { processGetMeta } from './getmeta.mjs';
 import { processGet } from './get.mjs';
+import { processSns } from './sns.mjs';
 import { processGetExtract } from './getextract.mjs';
 import { processGetExtractStatus } from './getextractstatus.mjs';
 
@@ -17,6 +18,12 @@ export const handler = async (event, context, callback) => {
         "isBase64Encoded": false
       },
     };
+    
+     
+    if(event.Records != null) {
+      await processSns(event.Records[0]);
+      return;
+    }
     
     if(event["httpMethod"] == "OPTIONS") {
       callback(null, response);

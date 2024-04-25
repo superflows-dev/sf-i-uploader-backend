@@ -49,9 +49,17 @@ export const processGetExtract = async (event) => {
     const userId = "1234";
 
     var key = null;
+    var dataPassthrough = null;
+    var callbackUrlHost = null;
+    var callbackUrlPath = null;
+    var doctype = null;
     
     try {
         key = JSON.parse(event.body).key;
+        dataPassthrough = JSON.parse(event.body).datapassthrough.trim();
+        callbackUrlHost = JSON.parse(event.body).callbackurlhost.trim();
+        callbackUrlPath = JSON.parse(event.body).callbackurlpath.trim();
+        doctype = JSON.parse(event.body).doctype;
     } catch (e) {
         const response = {statusCode: 400, body: { result: false, error: "Malformed body!"}};
         //processAddLog(userId, 'upload', event, response, response.statusCode)
@@ -60,7 +68,25 @@ export const processGetExtract = async (event) => {
     
     if(key == null || key == "" || key.length < 1) {
         const response = {statusCode: 400, body: {result: false, error: "Key is not valid!"}}
-       // processAddLog(userId, 'detail', event, response, response.statusCode)
+      // processAddLog(userId, 'detail', event, response, response.statusCode)
+        return response;
+    }
+    
+    if(dataPassthrough == null || dataPassthrough == "" || dataPassthrough.length < 1) {
+        const response = {statusCode: 400, body: {result: false, error: "DataPassthrough is not valid!"}}
+      // processAddLog(userId, 'detail', event, response, response.statusCode)
+        return response;
+    }
+    
+    if(callbackUrlHost == null || callbackUrlHost == "" || callbackUrlHost.length < 1) {
+        const response = {statusCode: 400, body: {result: false, error: "CallbackUrlHost is not valid!"}}
+      // processAddLog(userId, 'detail', event, response, response.statusCode)
+        return response;
+    }
+    
+    if(callbackUrlPath == null || callbackUrlPath == "" || callbackUrlPath.length < 1) {
+        const response = {statusCode: 400, body: {result: false, error: "CallbackUrlPath is not valid!"}}
+      // processAddLog(userId, 'detail', event, response, response.statusCode)
         return response;
     }
     
@@ -116,8 +142,12 @@ export const processGetExtract = async (event) => {
         "S3Object": {
             "Bucket": S3_BUCKET,
             "Name": key + "_" + "full." + ext
-        }
+        },
       },
+      "NotificationChannel": {
+          "SNSTopicArn": "arn:aws:sns:us-east-1:181895849565:AmazonTextractT_sf-i-uploader_FlaggGRC-ComplianceUploads_1684321396854_test",
+          "RoleArn": "arn:aws:iam::181895849565:role/TextractRole"
+      }
     };
     
     const command1 = new StartDocumentTextDetectionCommand(input);
@@ -125,12 +155,48 @@ export const processGetExtract = async (event) => {
     
     const jobId = response1.JobId;
     
+     var setParams = {
+        TableName: TABLE,
+        Item: {
+            id: {
+                "S": jobId
+            },
+            status: {
+                "S": "0"
+            },
+            data: {
+                "S": JSON.stringify(dataPassthrough)
+            },
+            doctype: {
+                "S": doctype == null ? "" : doctype
+            },
+            callbackurlhost: {
+                "S": callbackUrlHost
+            },
+            callbackurlpath: {
+                "S": callbackUrlPath
+            }
+        }
+    };
+    
+    console.log(setParams);
+    
+    const ddbUpdate = async (setParams) => {
+        try {
+          const data = await ddbClient.send(new PutItemCommand(setParams));
+          return data;
+        } catch (err) {
+          return err;
+        }
+    };
+    
+    var resultUpdate = await ddbUpdate(setParams);
+    
     // console.log('jobid', jobId);
     
     const response = {statusCode: 200, body: {result: true, jobId: jobId}};
     processAddLog(userId, 'getextract', event, response, response.statusCode)
     return response;
-    // return responseGet;
     
     
 }

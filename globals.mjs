@@ -1,4 +1,4 @@
-const REGION = "AWS_REGION"; //e.g. "us-east-1"
+const REGION = "us-east-1"; //e.g. "us-east-1"
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { ScanCommand, GetItemCommand, PutItemCommand, UpdateItemCommand, DeleteItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb";
 import { CloudWatchLogsClient, PutLogEventsCommand, GetLogEventsCommand } from "@aws-sdk/client-cloudwatch-logs";
@@ -19,6 +19,14 @@ const RECORD_TYPE_DATA= "data";
 
 const PRESERVE_LOGS_DAYS = 3;
 
+const DOC_DIR = {
+    "aadhar": ["unique", "government", "of", "india", "aadhaar"]
+}
+
+const VERIFY_DIR = {
+    "aadhar": [{"length": 4, "type": "numeric"},{"length": 4, "type": "numeric"},{"length": 4, "type": "numeric"}]
+}
+
 export { 
     REGION,
     ScanCommand, 
@@ -30,6 +38,9 @@ export {
     ddbClient,
     TABLE, 
     AUTH_ENABLE, 
+    // AUTH_REGION, 
+    // AUTH_API, 
+    // AUTH_STAGE,
     PRESERVE_LOGS_DAYS,
     CloudWatchLogsClient,
     PutLogEventsCommand,
@@ -46,5 +57,7 @@ export {
     TextractClient,
     DetectDocumentTextCommand,
     StartDocumentTextDetectionCommand,
-    GetDocumentTextDetectionCommand
+    GetDocumentTextDetectionCommand,
+    DOC_DIR,
+    VERIFY_DIR
 };

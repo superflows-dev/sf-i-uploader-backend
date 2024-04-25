@@ -1,5 +1,7 @@
-import { TextractClient, GetDocumentTextDetectionCommand, DetectDocumentTextCommand, StartDocumentTextDetectionCommand, ListObjectsV2Command, GetObjectCommand, GetObjectAttributesCommand, S3_BUCKET, PutObjectCommand, s3Client, RECORD_TYPE_META, RECORD_TYPE_DATA, REGION, TABLE, AUTH_ENABLE, ddbClient, ScanCommand, PutItemCommand } from "./globals.mjs";
+import { DOC_DIR, TextractClient, GetDocumentTextDetectionCommand, DetectDocumentTextCommand, GetItemCommand, StartDocumentTextDetectionCommand, ListObjectsV2Command, GetObjectCommand, GetObjectAttributesCommand, S3_BUCKET, PutObjectCommand, s3Client, RECORD_TYPE_META, RECORD_TYPE_DATA, REGION, TABLE, AUTH_ENABLE, ddbClient, ScanCommand, PutItemCommand } from "./globals.mjs";
 import { processAuthenticate } from './authenticate.mjs';
+import { processParseDocument } from './parsedocument.mjs';
+import { processExtractDocument } from './extractdocument.mjs';
 import { newUuidV4 } from './newuuid.mjs';
 import { getMimeFromExtension } from './getMimeFromExtension.mjs';
 import { processAddLog } from './addlog.mjs';
@@ -64,32 +66,76 @@ export const processGetExtractStatus = async (event) => {
         return response;
     }
     
-    // console.log(response1);
-    // console.log(jobId);
+    var getParams = {
+        TableName: TABLE,
+        Key: {
+          id: { S: jobId },
+        },
+    };
     
-    const input2 = {
-        "JobId": jobId
+    async function ddbGet (getParams) {
+        try {
+          const data = await ddbClient.send(new GetItemCommand(getParams));
+          return data;
+        } catch (err) {
+          return err;
+        }
+    };
+    
+    var resultGet = await ddbGet(getParams);
+    
+    if(resultGet.Item != null) {
+        
+        if(resultGet.Item.arrwords != null) {
+            
+            if(resultGet.Item.doctype != null) {
+                
+                const docType = resultGet.Item.doctype.S;
+            
+                const response = {statusCode: 200, body: {result: true, status: "SUCCEEDED", arrWords: resultGet.Item.arrwords, arrWordsMeta: resultGet.Item.arrmeta}};
+                
+                if(docType != "") {
+                    
+                    if(DOC_DIR[docType] != null) {
+                        
+                        response.body.documentParsed = processParseDocument(JSON.parse(resultGet.Item.arrwords.S), docType);
+                        if(response.body.documentParsed) {
+                            response.body.possibleMatches = processExtractDocument(JSON.parse(resultGet.Item.arrwords.S), docType);
+                        }
+                        
+                    }
+                        
+                }
+                
+                processAddLog(userId, 'getextractstatus', event, response, response.statusCode)
+                return response;
+                
+            } else {
+                
+                const response = {statusCode: 200, body: {result: true, status: "SUCCEEDED", arrWords: resultGet.Item.arrwords, arrWordsMeta: resultGet.Item.arrmeta}};
+                processAddLog(userId, 'getextractstatus', event, response, response.statusCode)
+                return response;
+                
+            }
+            
+            
+            
+            
+        } else {
+            
+            const response = {statusCode: 200, body: {result: true, status: "IN_PROGRESS"}};
+            processAddLog(userId, 'getextractstatus', event, response, response.statusCode)
+            return response;
+            
+        }
+        
+    } else {
+        
+        const response = {statusCode: 200, body: {result: true, status: "IN_PROGRESS"}};
+        processAddLog(userId, 'getextractstatus', event, response, response.statusCode)
+        return response;
+        
     }
-    
-    // sleep(5000);
-    
-    const txClient = new TextractClient();
-    const command2 = new GetDocumentTextDetectionCommand(input2);
-    const response2 = await txClient.send(command2);
-    
-    console.log(response2.JobStatus);
-    
-    if(response2.JobStatus == "SUCCEEDED") {
-      console.log(response2.Blocks.length);
-    }
-    
-    
-    // return response1;
-    // return response;
-    
-    const response = {statusCode: 200, body: {result: true, status: response2}};
-    processAddLog(userId, 'getextract', event, response, response.statusCode)
-    return response;
     
     
 }

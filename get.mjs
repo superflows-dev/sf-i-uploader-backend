@@ -181,7 +181,7 @@ export const processGet = async (event) => {
         
     } else {
     
-        const response = {statusCode: 422, body: {result: false, error: "File is not uploaded properly!"}};
+        const response = {statusCode: 422, body: {result: false, error: "File is not uploaded properly!", percentageComplete: allKeys}};
         processAddLog(userId, 'get', event, response, response.statusCode)
         return response;
     
