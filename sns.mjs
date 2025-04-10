@@ -19,11 +19,14 @@ export const processSns = async (event) => {
         "JobId": JobId
     }
     
+    processAddLog("0000", 'sns', input2, '', 200)
+    
     const txClient = new TextractClient();
     const command2 = new GetDocumentTextDetectionCommand(input2);
     const response2 = await txClient.send(command2);
     const blocks = response2.Blocks;
     
+    processAddLog("0000", 'sns', response2, '', 200)
     processAddLog("0000", 'sns', response2.JobStatus, '', 200)
     
       var arrWords = [];

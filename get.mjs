@@ -1,45 +1,47 @@
-import { ListObjectsV2Command, GetObjectCommand, GetObjectAttributesCommand, S3_BUCKET, PutObjectCommand, s3Client, RECORD_TYPE_META, RECORD_TYPE_DATA, REGION, TABLE, AUTH_ENABLE, ddbClient, ScanCommand, PutItemCommand } from "./globals.mjs";
+import { KMS_KEY_REGISTER, ListObjectsV2Command, GetObjectCommand, GetObjectAttributesCommand, S3_BUCKET, PutObjectCommand, s3Client, RECORD_TYPE_META, RECORD_TYPE_DATA, REGION, TABLE, AUTH_ENABLE, ddbClient, ScanCommand, PutItemCommand } from "./globals.mjs";
 import { processAuthenticate } from './authenticate.mjs';
 import { newUuidV4 } from './newuuid.mjs';
+import { processKmsDecrypt } from './kmsdecrypt.mjs';
+import { processDecryptData } from './decryptdata.mjs';
 import { getMimeFromExtension } from './getMimeFromExtension.mjs';
 import { processAddLog } from './addlog.mjs';
 
 export const processGet = async (event) => {
     
-    // if((event["headers"]["Authorization"]) == null) {
-    //     return {statusCode: 400, body: { result: false, error: "Malformed headers!"}};
-    // }
+    if((event["headers"]["Authorization"]) == null) {
+        return {statusCode: 400, body: { result: false, error: "Malformed headers!"}};
+    }
     
-    // if((event["headers"]["Authorization"].split(" ")[1]) == null) {
-    //     return {statusCode: 400, body: { result: false, error: "Malformed headers!"}};
-    // }
+    if((event["headers"]["Authorization"].split(" ")[1]) == null) {
+        return {statusCode: 400, body: { result: false, error: "Malformed headers!"}};
+    }
     
-    // var hAscii = Buffer.from((event["headers"]["Authorization"].split(" ")[1] + ""), 'base64').toString('ascii');
+    var hAscii = Buffer.from((event["headers"]["Authorization"].split(" ")[1] + ""), 'base64').toString('ascii');
     
-    // if(hAscii.split(":")[1] == null) {
-    //     return {statusCode: 400, body: { result: false, error: "Malformed headers!"}};
-    // }
+    if(hAscii.split(":")[1] == null) {
+        return {statusCode: 400, body: { result: false, error: "Malformed headers!"}};
+    }
     
-    // const email = hAscii.split(":")[0];
-    // const accessToken = hAscii.split(":")[1];
+    const email = hAscii.split(":")[0];
+    const accessToken = hAscii.split(":")[1];
     
-    // if(email == "" || !email.match(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/)) {
-    //     return {statusCode: 400, body: {result: false, error: "Malformed headers!"}}
-    // }
+    if(email == "" || !email.match(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/)) {
+        return {statusCode: 400, body: {result: false, error: "Malformed headers!"}}
+    }
     
-    // if(accessToken.length < 5) {
-    //     return {statusCode: 400, body: {result: false, error: "Malformed headers!"}}
-    // }
+    if(accessToken.length < 5) {
+        return {statusCode: 400, body: {result: false, error: "Malformed headers!"}}
+    }
     
-    // const authResult = await processAuthenticate(event["headers"]["Authorization"]);
+    const authResult = await processAuthenticate(event["headers"]["Authorization"]);
     
-    // if(!authResult.result) {
-    //     return {statusCode: 401, body: {result: false, error: "Unauthorized request!"}};
-    // }
+    if(!authResult.result) {
+        return {statusCode: 401, body: {result: false, error: "Unauthorized request!"}};
+    }
     
-    // const userId = authResult.userId;
+    const userId = authResult.userId;
     
-    const userId = "1234";
+    // const userId = "1234";
 
     var key = null;
     
@@ -147,7 +149,10 @@ export const processGet = async (event) => {
     const numdatafiles = allKeys.length - 1;
     const percentageComplete = parseInt((100*numdatafiles)/numblocks)
     
-    if(percentageComplete == "100") {
+    if(percentageComplete >= 100) {
+        
+        
+        console.log('allKeys', allKeys);
         
         const blocks = [];
         for(var i = 0; i < allKeys.length - 1; i++) {
@@ -167,6 +172,38 @@ export const processGet = async (event) => {
                 }
                 const responseBuffer = Buffer.concat(chunks)
                 strContent = responseBuffer.toString();
+                
+                // console.log('strcontent', strContent);
+                
+                var projectid = null;
+        
+                try {
+                    projectid = JSON.parse(event.body).projectid.trim();
+                } catch (e) {
+                    
+                }
+                console.log('projectid', projectid)
+                if(projectid != null) {
+                    
+                    if(strContent.indexOf("::") >= 0) {
+                        console.log('here 1', Object.keys(KMS_KEY_REGISTER), KMS_KEY_REGISTER[projectid])
+                        if(KMS_KEY_REGISTER[projectid] != null) {
+                            console.log('decrypting 1')
+                            strContent = await processDecryptData(projectid, strContent);
+                        }
+                                        
+                    } else {
+                        console.log('here 2', KMS_KEY_REGISTER[projectid] )
+                        if(KMS_KEY_REGISTER[projectid] != null) {
+                            console.log('decrypting 2')
+                            const text = await processKmsDecrypt(projectid, strContent);
+                            strContent = text.toLowerCase().indexOf('error') >= 0 ? strContent : text;
+                        }
+                        
+                    }
+                    
+                }
+                
                 blocks.push(strContent);
             } catch (err) {
                 console.error(err);
@@ -174,14 +211,14 @@ export const processGet = async (event) => {
             
         }
         
-        console.log(blocks[blocks.length - 1]);
+        // console.log(blocks[blocks.length - 1]);
         const response = {statusCode: 200, body: {result: true, ext: ext, data: blocks.join('')}};
-        processAddLog(userId, 'get', event, response, response.statusCode)
+        // processAddLog(userId, 'get', event, response, response.statusCode)
         return response;
         
     } else {
     
-        const response = {statusCode: 422, body: {result: false, error: "File is not uploaded properly!", percentageComplete: allKeys}};
+        const response = {statusCode: 422, body: {result: false, error: "File is not uploaded properly!", percentageComplete: percentageComplete, keys: allKeys}};
         processAddLog(userId, 'get', event, response, response.statusCode)
         return response;
     

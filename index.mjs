@@ -4,7 +4,8 @@ import { processGet } from './get.mjs';
 import { processSns } from './sns.mjs';
 import { processGetExtract } from './getextract.mjs';
 import { processGetExtractStatus } from './getextractstatus.mjs';
-
+import { processGetMessage } from './getmessage.mjs';
+import { processLargeFileWarning } from './largefilewarning.mjs';
 export const handler = async (event, context, callback) => {
     
     const response = {
@@ -38,6 +39,12 @@ export const handler = async (event, context, callback) => {
           response.statusCode = resultUpload.statusCode;
         break;
         
+        case "/getmessage":
+          const resultMessage = await processGetMessage(event);
+          response.body = JSON.stringify(resultMessage.body);
+          response.statusCode = resultMessage.statusCode;
+        break;
+        
         case "/getmeta":
           const resultGetMeta = await processGetMeta(event);
           response.body = JSON.stringify(resultGetMeta.body);
@@ -60,6 +67,12 @@ export const handler = async (event, context, callback) => {
           const resultGetExtractStatus = await processGetExtractStatus(event);
           response.body = JSON.stringify(resultGetExtractStatus.body);
           response.statusCode = resultGetExtractStatus.statusCode;
+        break;
+
+        case "/largefilewarning":
+          const resultLargeFileWarning = await processLargeFileWarning(event);
+          response.body = JSON.stringify(resultLargeFileWarning.body);
+          response.statusCode = resultLargeFileWarning.statusCode;
         break;
         
     }
