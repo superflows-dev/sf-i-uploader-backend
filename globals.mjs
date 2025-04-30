@@ -148,6 +148,7 @@ const MESSAGE_DIR = {
     "IN_FL_CMPNSRLSAPPNTQLFCTN2014_FLGSFOM_FORMDIR9": ["Please upload a valid document"],
 }
 
+const TEST_IP_ADDRESSES = ["104.28.219.94"]
 export { 
     REGION,
     ScanCommand, 
@@ -186,5 +187,6 @@ export {
     DecryptCommand,
     KMS_KEY_REGISTER,
     kmsClient,
-    MESSAGE_DIR
+    MESSAGE_DIR,
+    TEST_IP_ADDRESSES
 };
