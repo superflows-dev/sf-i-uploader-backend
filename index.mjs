@@ -8,6 +8,7 @@ import { processGetMessage } from './getmessage.mjs';
 import { processLargeFileWarning } from './largefilewarning.mjs';
 import nodemailer from 'nodemailer';
 import { TEST_IP_ADDRESSES } from './globals.mjs';
+import { stat } from 'fs';
 export const handler = async (event, context, callback) => {
 
   const response = {
@@ -33,12 +34,42 @@ export const handler = async (event, context, callback) => {
     return;
   }
 
-  switch (event["path"]) {
+  var path = "";
+
+  if (event["path"] != null) {
+    path = event["path"];
+  } else {
+    path = event["rawPath"];
+  }
+
+  if(event["headers"] != null) {
+    if(event["headers"]["authorization"] != null) {
+      event["headers"]["Authorization"] = event["headers"]["authorization"]
+    } else if(event["headers"]["Authorization"] != null) {
+      event["headers"]["authorization"] = event["headers"]["Authorization"]
+    }
+  }
+
+  switch (path) {
 
     case "/upload":
+      
       const resultUpload = await processUpload(event);
+      // response.body = JSON.stringify({ result: false, event: event, path: path, response: resultUpload });  
       response.body = JSON.stringify(resultUpload.body);
-      response.statusCode = resultUpload.statusCode;
+      response.statusCode = resultUpload.statusCode ;
+      // response.statusCode = 200 ;
+
+      break;
+
+    case "/upload1":
+      
+      const resultUpload1 = await processUpload(event);
+      // response.body = JSON.stringify({ result: false, event: event, path: path, response: resultUpload });  
+      response.body = JSON.stringify(resultUpload1.body);
+      response.statusCode = resultUpload1.statusCode;
+      // response.statusCode = 200 ;
+
       break;
 
     case "/getmessage":
@@ -102,6 +133,7 @@ export const handler = async (event, context, callback) => {
       const emailResult = await transporter.sendMail(message);
       response.body = JSON.stringify({ result: false, error: "Method not found", event: event });
       response.statusCode = 404;
+      break;
   }
 
   callback(null, response);

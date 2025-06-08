@@ -172,7 +172,7 @@ export const processUpload = async (event) => {
     }
     
     
-    const response = {statusCode: 200, body: {result: true, key: key, encKey: encKey, project: project, normalData: norData, encData: encData, insert: insert}};
+    const response = {statusCode: 200, body: {result: true}};
     processAddLog(userId, 'upload', event, response, response.statusCode)
     return response;
 
