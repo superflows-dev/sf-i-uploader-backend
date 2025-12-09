@@ -67,7 +67,7 @@ export const processGetMessage = async (event) => {
     
     if(messageArr == null || messageArr.length < 1 || verifyArr == null || verifyArr.length < 1 || matchArr == null){
         
-        const response = {statusCode: 400, body: {result: false, error: "DocType not found!"}}
+        const response = {statusCode: 404, body: {result: false, error: "DocType not found!"}}
         processAddLog(userId, 'getmessagebydoctype', event, response, response.statusCode)
         return response;
         

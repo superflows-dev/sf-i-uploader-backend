@@ -9,7 +9,7 @@ import crypto from 'crypto';
 export const processDecryptData = async (projectid, strData) => {
     
     const strArr = strData.split("::");
-    const newEncSecret = strArr[0];
+    // const newEncSecret = strArr[0];
     const newEncKey = strArr[1];
     const newBaseIV = strArr[2];
     
@@ -18,7 +18,7 @@ export const processDecryptData = async (projectid, strData) => {
     // console.log('newBaseIV', newBaseIV);
     // // console.log('strArr[3]', strArr[3]);
     
-    const newSecret = await processKmsDecrypt(projectid, newEncSecret);
+    // const newSecret = await processKmsDecrypt(projectid, newEncSecret);
     // console.log('newSecret', newSecret);
     const newKey = await processKmsDecrypt(projectid, newEncKey);
     const newIV = Buffer.from(newBaseIV, 'base64');

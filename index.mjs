@@ -1,6 +1,7 @@
 import { processUpload } from './upload.mjs';
 import { processGetMeta } from './getmeta.mjs';
 import { processGet } from './get.mjs';
+import { processGet1 } from './get.1.mjs';
 import { processSns } from './sns.mjs';
 import { processGetExtract } from './getextract.mjs';
 import { processGetExtractStatus } from './getextractstatus.mjs';
@@ -88,6 +89,12 @@ export const handler = async (event, context, callback) => {
       const resultGet = await processGet(event);
       response.body = JSON.stringify(resultGet.body);
       response.statusCode = resultGet.statusCode;
+      break;
+
+    case "/get1":
+      const resultGet1 = await processGet1(event);
+      response.body = JSON.stringify(resultGet1.body);
+      response.statusCode = resultGet1.statusCode;
       break;
 
     case "/getextract":

@@ -3,6 +3,7 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { KMSClient, EncryptCommand, DecryptCommand } from "@aws-sdk/client-kms";
 import { ScanCommand, GetItemCommand, PutItemCommand, UpdateItemCommand, DeleteItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb";
 import { CloudWatchLogsClient, PutLogEventsCommand, GetLogEventsCommand } from "@aws-sdk/client-cloudwatch-logs";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { PutObjectCommand, S3Client, GetObjectAttributesCommand, GetObjectCommand, ListObjectsV2Command, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { TextractClient, DetectDocumentTextCommand, StartDocumentTextDetectionCommand, GetDocumentTextDetectionCommand } from "@aws-sdk/client-textract";
 
@@ -14,6 +15,7 @@ const kmsClient = new KMSClient({ region: REGION });
 const TABLE = "T_sf-i-uploader_FlaggGRC-ComplianceUploads_1684321396854_test";
 const LOG_GROUP_NAME = "l-sf-i-uploader-1684321396854";
 const S3_BUCKET = "flagggrc-complianceuploads1684321396854-uploads";
+const S3_TEMP_FOLDER = "temp";
 
 const AUTH_ENABLE = true;
 // const AUTH_REGION = "us-east-1";
@@ -25,17 +27,7 @@ const RECORD_TYPE_DATA= "data";
 
 const PRESERVE_LOGS_DAYS = 3;
 
-const KMS_KEY_REGISTER = {
-    "41ab3c86-ccc0-4c0e-8e31-cd079a07a710": "6e78ee2c-9a00-43b9-ab08-0efb73423a6f",//ABC GLobals
-    "f0f17ddb-546a-45f5-8a94-a5689fde8e64": "3e02606e-3ebb-4354-b301-57dd34c8f738",//Signode
-    "c7d18a84-c2df-4dc2-b75f-5820549f5e5c": "4241bfb3-8a84-4e0b-b4ed-405b65c896b7",//Chitale
-    "5c073644-5dce-4d8f-b82e-2bc2def2390f": "925b74fe-9b9a-4553-a66a-19812a97d7b6",//ABC Hospitals
-    "5a05b884-d7ed-4f63-b623-4d305ea2cfd6": "9c988685-0c01-42cd-85e0-81ff06ee0e1a",//Standard Radiators
-    "675fdd04-ca57-498b-a988-3de48af2a6bf": "146aa03f-2170-4228-a662-6b66bc724c6c",//Infotrends
-    "411aa07b-6104-443b-8e9b-bb17e1ea5768": "8848bf02-2ac2-4876-8e2f-5c4bc8eff51a",//Inzpera
-    "df1e1fd7-2a45-492d-b49d-60c4deb5073f": "df0710a5-abc1-484f-9085-208e1fb61a5a",//Butterfly
-    "63d20443-b9cc-4a86-b39d-bf81c1c93ba5": "0b2a6560-3a32-41a5-b442-fbbf89650bc6",// PrecisionMed ABC
-};
+const KMS_KEY_REGISTER = JSON.parse(process.env.KMS_KEY_REGISTER);//eslint-disable-line no-undef
 
 const DOC_DIR = {
     "aadhar": ["unique", "government", "of", "india", "aadhaar"],
@@ -169,6 +161,7 @@ export {
     LOG_GROUP_NAME,
     GetLogEventsCommand,
     S3_BUCKET,
+    S3_TEMP_FOLDER,
     PutObjectCommand,
     DeleteObjectCommand,
     s3Client,
@@ -177,6 +170,7 @@ export {
     GetObjectAttributesCommand,
     GetObjectCommand,
     ListObjectsV2Command,
+    getSignedUrl,
     TextractClient,
     DetectDocumentTextCommand,
     StartDocumentTextDetectionCommand,

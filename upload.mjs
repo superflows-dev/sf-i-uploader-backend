@@ -116,7 +116,7 @@ export const processUpload = async (event) => {
     if(type == RECORD_TYPE_DATA) {
         
         if(data == null || data == "" || data.length <= 0 || checkForScripts(data)) {
-            const response = {statusCode: 400, body: {result: false, error: "Data is not valid!"}}
+            const response = {statusCode: 400, body: {result: false, errorType: (data == null ? "null" : (data == "" ? "blank" : (data.length <= 0 ? "zero length" : "script"))), error: "Data is not valid!"}}
            // processAddLog(userId, 'detail', event, response, response.statusCode)
             return response;
         }
